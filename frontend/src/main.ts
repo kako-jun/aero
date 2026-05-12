@@ -85,6 +85,11 @@ export async function startMonitoring(): Promise<void> {
 
   monitoringActive = true;
   const ctx = new AudioContext();
+  // Tauri's wry WebView (macOS) starts the AudioContext in 'suspended' state
+  // without a user gesture; calling resume() unblocks the analyser pipeline.
+  if (ctx.state === "suspended") {
+    await ctx.resume();
+  }
   const source = ctx.createMediaStreamSource(stream);
   const analyser = ctx.createAnalyser();
   analyser.fftSize = FFT_SIZE;
